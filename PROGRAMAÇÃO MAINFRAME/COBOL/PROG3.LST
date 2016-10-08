@@ -1,0 +1,290 @@
+
+ PROG3.COB                               Wed Feb 17 15:34:09 2016    Page   1
+ line number source line   Microsoft COBOL                       Version 2.20
+
+   1         IDENTIFICATION DIVISION.
+   2         PROGRAM-ID. FPP001.
+   3        **************************************
+   4        * MANUTENCAO DO CADASTRO DE CLIENTES *
+   5        **************************************
+   6        *----------------------------------------------------------------
+   7         ENVIRONMENT DIVISION.
+   8         CONFIGURATION SECTION.
+   9         SPECIAL-NAMES.
+  10                           DECIMAL-POINT IS COMMA.
+  11         INPUT-OUTPUT SECTION.
+  12         FILE-CONTROL.
+  13         SELECT AMIGOS ASSIGN TO DISK
+  14                      ORGANIZATION IS INDEXED
+  15                      ACCESS MODE  IS DYNAMIC
+  16                      RECORD KEY   IS APELIDO
+  17                      FILE STATUS  IS ST-ERRO
+  18                      ALTERNATE RECORD KEY IS CHAVE3 = APELIDO
+  19                                                        WITH DUPLICATES.
+  20        *
+  21        *-----------------------------------------------------------------
+  22         DATA DIVISION.
+  23         FILE SECTION.
+  24         FD AMIGOS
+  25                 LABEL RECORD IS STANDARD
+  26                 VALUE OF FILE-ID IS "AMIGOS.DAT".
+  27         01 REGCLI.
+  28                  03 CHAVE1.
+  29                     05 APELIDO    PIC X(12).
+  30                  03 NOME          PIC X(30).
+  31                  03 BAIRRO        PIC X(30).
+  32                  03 CIDADE        PIC X(20).
+  33                  03 UF            PIC X(2).
+  34                  03 TELEFONE      PIC 9(12).
+  35  0               03 EMAIL         PIC X(30).
+  36        *
+  37        *-----------------------------------------------------------------
+  38         WORKING-STORAGE SECTION.
+  39         77 W-SEL        PIC 9(01) VALUE ZEROS.
+  40         77 W-CONT       PIC 9(06) VALUE ZEROS.
+  41         77 W-OPCAO      PIC X(01) VALUE SPACES.
+  42         77 ST-ERRO      PIC X(02) VALUE "00".
+  43         77 W-ACT        PIC 9(02) VALUE ZEROS.
+  44         77 MENS         PIC X(50) VALUE SPACES.
+  45         77 LIMPA        PIC X(50) VALUE SPACES.
+  46        *-----------------------------------------------------------------
+  47         PROCEDURE DIVISION.
+  48         INICIO.
+  49        *
+  50         INC-OP0.
+  51             OPEN I-O AMIGOS
+  52             IF ST-ERRO NOT = "00"
+  53                 IF ST-ERRO = "30"
+  54                        OPEN OUTPUT AMIGOS
+  55                        CLOSE AMIGOS
+  56                        MOVE "*** ARQUIVO AMIGOS SENDO CRIADO **" TO MENS
+  57                        PERFORM ROT-MENS THRU ROT-MENS-FIM
+
+ PROG3.COB                               Wed Feb 17 15:34:09 2016    Page   2
+ line number source line   Microsoft COBOL                       Version 2.20
+
+  58                        GO TO INC-OP0
+  59                     ELSE
+  60                        MOVE "ERRO NA ABERTURA DO ARQUIVO AMIGOS" TO MENS
+  61                        PERFORM ROT-MENS THRU ROT-MENS-FIM
+  62                        GO TO ROT-FIM
+  63                  ELSE
+  64                      NEXT SENTENCE.
+  65         INC-001.
+  66                  MOVE ZEROS  TO TELEFONE
+  67                  MOVE SPACES TO  APELIDO NOME.
+  68                  DISPLAY (01, 01) ERASE
+  69                  DISPLAY  (01, 20) "CADASTRO DE CLIENTES"
+  70                  DISPLAY  (04, 01) "APELIDO: "
+  71                  DISPLAY  (05, 01) "NOME: "
+  72                  DISPLAY  (06, 01) "BAIRRO: "
+  73                  DISPLAY  (07, 01) "CIDADE: "
+  74                  DISPLAY  (08, 01) "UF: "
+  75                  DISPLAY  (09, 01) "TELEFONE: "
+  76                  DISPLAY  (10, 01) "EMAIL: ".
+  77         INC-002.
+  78                  ACCEPT  (04, 12) APELIDO
+  79                  ACCEPT W-ACT FROM ESCAPE KEY
+  80                  IF W-ACT = 02
+  81                     CLOSE AMIGOS
+  82                     GO TO ROT-FIM.
+  83                  IF APELIDO  = SPACE
+  84                     MOVE "*** APELIDO  INVALIDO ***" TO MENS
+  85                     PERFORM ROT-MENS THRU ROT-MENS-FIM
+  86                     GO TO INC-001.
+  87         LER-CLIENTE01.
+  88                  MOVE 0 TO W-SEL
+  89                  READ AMIGOS
+  90                  IF ST-ERRO NOT = "23"
+  91                     IF ST-ERRO = "00"
+  92                        DISPLAY  (04, 12) APELIDO
+  93                        DISPLAY  (05, 12) NOME
+  94                        DISPLAY  (06, 12) BAIRRO
+  95                        DISPLAY  (07, 12) CIDADE
+  96                        DISPLAY  (08, 12) UF
+  97                        DISPLAY  (09, 12) TELEFONE
+  98                        DISPLAY  (10, 12) EMAIL
+  99                        MOVE "*** AMIGO JA CADASTRAD0 ***" TO MENS
+ 100                        PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 101                        MOVE 1 TO W-SEL
+ 102                        GO TO ACE-001
+ 103                     ELSE
+ 104                        MOVE "ERRO NA LEITURA ARQUIVO AMIGO"   TO MENS
+ 105                        PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 106                        GO TO ROT-FIM
+ 107                  ELSE
+ 108                     NEXT SENTENCE.
+ 109         INC-003.
+ 110                  ACCEPT (05, 12) NOME
+ 111                  ACCEPT W-ACT FROM ESCAPE KEY
+ 112                  IF W-ACT = 02 GO TO INC-002.
+ 113         INC-004.
+ 114                  ACCEPT (06, 12) BAIRRO
+
+ PROG3.COB                               Wed Feb 17 15:34:09 2016    Page   3
+ line number source line   Microsoft COBOL                       Version 2.20
+
+ 115                  ACCEPT W-ACT FROM ESCAPE KEY
+ 116                  IF W-ACT = 02 GO TO INC-003.
+ 117         INC-005.
+ 118                  ACCEPT (07, 12) CIDADE
+ 119                  ACCEPT W-ACT FROM ESCAPE KEY
+ 120                  IF W-ACT = 02 GO TO INC-004.
+ 121         INC-006.
+ 122                  ACCEPT (08, 12) UF
+ 123                  ACCEPT W-ACT FROM ESCAPE KEY
+ 124                  IF W-ACT = 02 GO TO INC-005.
+ 125                  IF UF NOT = "SP" AND "RJ" AND "MG"
+ 126                        MOVE "*** UF INCORRETA ***" TO MENS
+ 127                        PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 128                        MOVE SPACES TO UF
+ 129                        DISPLAY (08, 12) UF
+ 130                        GO TO INC-006.
+ 131         INC-007.
+ 132                  ACCEPT (09, 12) TELEFONE
+ 133                  ACCEPT W-ACT FROM ESCAPE KEY
+ 134                  IF W-ACT = 02 GO TO INC-006.
+ 135         INC-008.
+ 136                  ACCEPT (10, 12) EMAIL
+ 137                  ACCEPT W-ACT FROM ESCAPE KEY
+ 138                  IF W-ACT = 02 GO TO INC-007.
+ 139        *
+ 140                  IF W-SEL = 1
+ 141                                GO TO ALT-OPC.
+ 142         INC-OPC.
+ 143                  MOVE "S" TO W-OPCAO
+ 144                  DISPLAY (23, 40) "DADOS OK (S/N) : ".
+ 145                  ACCEPT (23, 57) W-OPCAO WITH UPDATE
+ 146                  ACCEPT W-ACT FROM ESCAPE KEY
+ 147                  IF W-ACT = 02 GO TO INC-005.
+ 148                  IF W-OPCAO = "N" OR "n"
+ 149                     MOVE "*** DADOS RECUSADOS PELO OPERADOR ***" TO MENS
+ 150                     PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 151                     GO TO INC-001.
+ 152                  IF W-OPCAO NOT = "S" AND "s"
+ 153                     MOVE "*** DIGITE APENAS S=SIM e N=NAO ***" TO MENS
+ 154                     PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 155                     GO TO INC-OPC.
+ 156         INC-WR1.
+ 157                  WRITE REGCLI
+ 158                  IF ST-ERRO = "00" OR "02"
+ 159                        MOVE "*** DADOS GRAVADOS *** " TO MENS
+ 160                        PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 161                        GO TO INC-001.
+ 162                  IF ST-ERRO = "22"
+ 163                        MOVE "*** AMIGO JA EXISTE ***       " TO MENS
+ 164                        PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 165                        GO TO INC-001
+ 166                  ELSE
+ 167                        MOVE "ERRO NA GRAVACAO DO ARQUIVO DE AMIGOS"
+ 168                                                         TO MENS
+ 169                        PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 170                        GO TO ROT-FIM.
+ 171        *
+
+ PROG3.COB                               Wed Feb 17 15:34:09 2016    Page   4
+ line number source line   Microsoft COBOL                       Version 2.20
+
+ 172        *****************************************
+ 173        * ROTINA DE CONSULTA/ALTERACAO/EXCLUSAO *
+ 174        *****************************************
+ 175        *
+ 176         ACE-001.
+ 177                  DISPLAY (23, 12)
+ 178                       "F1=NOVO REGISTRO   F2=ALTERAR   F3=EXCLUIR"
+ 179                  ACCEPT (23, 55) W-OPCAO
+ 180                  ACCEPT W-ACT FROM ESCAPE KEY
+ 181                  IF W-ACT NOT = 02 AND W-ACT NOT = 03 AND W-ACT NOT = 04
+ 182                     GO TO ACE-001.
+ 183                  MOVE SPACES TO MENS
+ 184                  DISPLAY (23, 12) MENS
+ 185                  IF W-ACT = 02
+ 186                     MOVE 02 TO W-SEL
+ 187                     GO TO INC-001.
+ 188                  IF W-ACT = 03
+ 189                     GO TO INC-002.
+ 190        *
+ 191         EXC-OPC.
+ 192                  DISPLAY (23, 40) "EXCLUIR   (S/N) : ".
+ 193                  ACCEPT (23, 57) W-OPCAO
+ 194                  IF W-OPCAO = "N" OR "n"
+ 195                     MOVE "*** REGISTRO NAO EXCLUIDO ***" TO MENS
+ 196                     PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 197                     GO TO INC-001.
+ 198                  IF W-OPCAO NOT = "S" AND "s"
+ 199                     MOVE "*** DIGITE APENAS S=SIM  e  N=NAO ***" TO MENS
+ 200                     PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 201                     GO TO EXC-OPC.
+ 202         EXC-DL1.
+ 203                  DELETE AMIGOS RECORD
+ 204                  IF ST-ERRO = "00"
+ 205                     MOVE "*** REGISTRO EXCLUIDO ***           " TO MENS
+ 206                     PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 207                     GO TO INC-001.
+ 208                  MOVE "ERRO NA EXCLUSAO DO REGISTRO "   TO MENS
+ 209                  PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 210                  GO TO ROT-FIM.
+ 211        *
+ 212         ALT-OPC.
+ 213                  DISPLAY (23, 40) "ALTERAR  (S/N) : ".
+ 214                  ACCEPT (23, 57) W-OPCAO
+ 215                  ACCEPT W-ACT FROM ESCAPE KEY
+ 216                  IF W-ACT = 02 GO TO INC-005.
+ 217                  IF W-OPCAO = "N" OR "n"
+ 218                     MOVE "*** INFORMACOES NAO ALTERADAS *** " TO MENS
+ 219                     PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 220                     GO TO INC-001.
+ 221                  IF W-OPCAO NOT = "S" AND "s"
+ 222                     MOVE "*** DIGITE APENAS S=SIM  e  N=NAO ***" TO MENS
+ 223                     PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 224                     GO TO ALT-OPC.
+ 225         ALT-RW1.
+ 226                  REWRITE REGCLI
+ 227                  IF ST-ERRO = "00" OR "02"
+ 228                     MOVE "*** REGISTRO ALTERADO ***         " TO MENS
+
+ PROG3.COB                               Wed Feb 17 15:34:09 2016    Page   5
+ line number source line   Microsoft COBOL                       Version 2.20
+
+ 229                     PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 230                     GO TO INC-001.
+ 231                  MOVE "ERRO NA EXCLUSAO DO REGISTRO AMIGOS"   TO MENS
+ 232                  PERFORM ROT-MENS THRU ROT-MENS-FIM
+ 233                  GO TO ROT-FIM.
+ 234        *
+ 235        **********************
+ 236        * ROTINA DE FIM      *
+ 237        **********************
+ 238        *
+ 239         ROT-FIM.
+ 240                  DISPLAY (01, 01) ERASE
+ 241                  EXIT PROGRAM.
+ 242         ROT-FIMP.
+ 243                  EXIT PROGRAM.
+ 244    
+ 245         ROT-FIMS.
+ 246                  STOP RUN.
+ 247        *
+ 248        **********************
+ 249        * ROTINA DE MENSAGEM *
+ 250        **********************
+ 251        *
+ 252         ROT-MENS.
+ 253                  MOVE ZEROS TO W-CONT.
+ 254         ROT-MENS1.
+ 255                 DISPLAY (23, 12) MENS.
+ 256         ROT-MENS2.
+ 257                  ADD 1 TO W-CONT
+ 258                  IF W-CONT < 300000
+ 259                     GO TO ROT-MENS2
+ 260                  ELSE
+ 261                     DISPLAY (23, 12) LIMPA.
+ 262         ROT-MENS-FIM.
+ 263                  EXIT.
+ 264         FIM-ROT-TEMPO.
+
+   No errors or warnings
+
+   Data area size =  1764
+   Code area size =  2036
+
